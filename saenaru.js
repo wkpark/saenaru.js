@@ -541,7 +541,7 @@ Saenaru.prototype = {
 			var endText = f.value.substr(f.selectionEnd);
 
 			var e = document.createEvent('TextEvent');
-			if (e.initTextEvent) { // Chrome/safari
+			if (false && e.initTextEvent) { // Chrome/safari
 				// Chrome undo/redo support
 				// from http://stackoverflow.com/a/7554295/1696120
 				if (c) {
@@ -677,6 +677,8 @@ Saenaru.prototype = {
 		var log = document.getElementById('log');
 		if (log) {
 			log.innerHTML+= str;
+		} else if (console.log) {
+			console.log(str);
 		} else {
 			alert(str);
 		}
@@ -950,6 +952,7 @@ Saenaru.prototype.keyPress = function(e) {
 	if ((f.type != 'text' || n != 'INPUT') && n != 'TEXTAREA') return true;
 
 	var c = e.which || e.which == 0 ? e.which : e.keyCode;
+	var keyCode = e.keyCode;
 
 	if ((c==10 || c==13 || c==32) && (e.ctrlKey || e.shiftKey)) { // Toggle
 		this.toggleMode(f);
@@ -957,7 +960,7 @@ Saenaru.prototype.keyPress = function(e) {
 		return false;
 	}
 
-	if (this.mode != 'en' && !e.altKey && !e.ctrlKey && e.keyCode < 127 && c > 32 && c < 127) {
+	if (this.mode != 'en' && !e.altKey && !e.ctrlKey && keyCode < 127 && c > 32 && c < 127) {
 		// no selection area. just clear ic
 		if (f.selectionEnd+1 && f.selectionEnd == f.selectionStart)
 			this.ic_clear();
@@ -1017,7 +1020,8 @@ Saenaru.prototype.keyDown = function(e) {
 		};
 	}
 
-	if (e.keyCode == BACKSPACE) {
+	var keyCode = e.keyCode;
+	if (keyCode == BACKSPACE) {
 		// clear ic
 		if (f.selectionEnd+1 && f.selectionEnd == f.selectionStart)
 			this.ic_clear();
@@ -1080,7 +1084,7 @@ Saenaru.prototype.keyDown = function(e) {
 		}
 	}
 
-	if (e.keyCode == 113) {
+	if (keyCode == 113) {
 		var ret = this.engToHan(f);
 		if (ret != null) {
 			this.preedit(f, ret);
@@ -1088,20 +1092,20 @@ Saenaru.prototype.keyDown = function(e) {
 		}
 	}
 
-	if (e.keyCode == 27) f.blur(); // ESC like as vim
+	if (keyCode == 27) f.blur(); // ESC like as vim
 	if (this.wordmode && this.compstr.length > 0 && e.ctrlKey) {
-		if (e.keyCode == 'X'.charCodeAt()) {
+		if (keyCode == 'X'.charCodeAt()) {
 			// copy
 			this.ic_clear_all();
 		}
-		if (e.keyCode == 'V'.charCodeAt()) {
+		if (keyCode == 'V'.charCodeAt()) {
 			// paste
 			this.preedit(f, "", this.COMP_END);
 			this.ic_clear_all();
 		}
 		return true;
 	}
-	if (e.keyCode != 16 && e.keyCode < 47) {
+	if (keyCode != 16 && keyCode < 47) {
 		if (this.ic_size() == 0 && this.compstr.length == 0)
 			return true;
 
@@ -1536,7 +1540,9 @@ var init = function() {
 	saenaru.setStatus(mystatus);
 };
 
-if (window.addEventListener) {
+if (document.readyState == 'complete') {
+	init();
+} else if (window.addEventListener) {
 	window.addEventListener('load', init, false);
 } else if (window.attachEvent) {
 	window.attachEvent('onload', init);
