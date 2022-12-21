@@ -565,8 +565,11 @@ Saenaru.prototype = {
 	},
 
 	_hangulKeyboard: function(c) {
-		if (this.kbdtbl == null)
-			this.setKeyboard(this.kbd);
+		if (this.kbdtbl == null) {
+			var ret = this.setKeyboard(this.kbd);
+			if (ret === null)
+				return null;
+		}
 		if (this.kbdtbl && this.kbdtbl.table) {
 			return this.kbdtbl.table[c - '!'.charCodeAt()];
 		}
@@ -574,11 +577,20 @@ Saenaru.prototype = {
 	},
 
 	setKeyboard: function(name) {
+		var alias = {
+			"390": "3-390",
+			"3soon": "3-soon",
+			"3sun": "3-soon",
+		};
+		if (typeof name === 'undefined')
+			name = this.kbd;
+		if (typeof alias[name] !== 'undefined')
+			name = alias[name];
+		this.kbd = name;
 		this.kbdtbl = this.keyboards[name];
 		if (typeof this.kbdtbl === "undefined") {
 			this.log("keyboard not found!\n");
-		} else {
-			this.kbd = name;
+			return null;
 		}
 		var mapname = this.composemap;
 		if (typeof this.kbdtbl.compose !== 'undefined')
@@ -590,6 +602,7 @@ Saenaru.prototype = {
 
 		if (this.composemap != mapname || this.compose_table == null)
 			this.setComposeMap(mapname);
+		return 0;
 	},
 
 	engToHan: function(f, str) {
@@ -1508,6 +1521,10 @@ Saenaru.prototype.defaultStatus = {
 	},
 	
 	setMode: function(mode, f) {
+		if (typeof this.ime.keyboards[this.ime.kbd] === 'undefined') {
+			if (mode == 'ko' && this.ime.kbd && this.ime.kbd[0] == '3')
+				mode = 'k3';
+		}
 		if (mode == 'ko' && this.ime.keyboards[this.ime.kbd].type == 3) mode = 'k3';
 		if (mode == 'ko')
 			this.status.style.background = 'royalblue url("' + this.koImg + '") no-repeat';
@@ -1540,7 +1557,7 @@ var load = function() {
 var init = function() {
 	if (typeof document.saenaru === 'object') return;
 	// load keyboard files
-	//load("3final.js", "3soon.js");
+	//load("3final.js", "390.js", "3soon.js");
 
 	var saenaru = new Saenaru();
 	document.saenaru = saenaru;
@@ -1550,8 +1567,9 @@ var init = function() {
 	saenaru.attach();
 	// set default keyboard
 	//saenaru.kbd = "3-final";
-	//saenaru.kbd = "3soon";
-	//saenaru.kbd = "390";
+	//saenaru.kbd = "3-soon";
+	//saenaru.kbd = "3-390";
+	//saenaru.setKeyboard();
 	saenaru.setStatus();
 };
 
