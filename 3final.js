@@ -106,11 +106,15 @@ if (typeof Saenaru === 'function') {
 }
 
 var init = function() {
-	if (document.saenaru && typeof document.saenaru.keyboards["3-final"] === 'undefined')
+	if (document.saenaru && typeof document.saenaru.keyboards["3-final"] === 'undefined') {
 		document.saenaru.keyboards["3-final"] = keyboard_table_3final;
+		document.saenaru.setStatus();
+	}
 }
 
-if (window.addEventListener) {
+if (document.readyState == 'complete') {
+	init();
+} else if (window.addEventListener) {
 	window.addEventListener('load', init, false);
 } else if (window.attachEvent) {
 	window.attachEvent('onload', init);
