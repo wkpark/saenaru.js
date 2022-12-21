@@ -678,6 +678,8 @@ Saenaru.prototype = {
 		var log = document.getElementById('log');
 		if (log) {
 			log.innerHTML+= str;
+		} else if (console.log) {
+			console.log(str);
 		} else {
 			alert(str);
 		}
@@ -1537,7 +1539,9 @@ var init = function() {
 	saenaru.setStatus(mystatus);
 };
 
-if (window.addEventListener) {
+if (document.readyState == 'complete') {
+	init();
+} else if (window.addEventListener) {
 	window.addEventListener('load', init, false);
 } else if (window.attachEvent) {
 	window.attachEvent('onload', init);
