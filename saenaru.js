@@ -544,7 +544,8 @@ Saenaru.prototype = {
 			if (e.initTextEvent) { // Chrome/safari
 				// Chrome undo/redo support
 				// from http://stackoverflow.com/a/7554295/1696120
-				if (c) {
+				if (0 && c) {
+					// Chrome no longer support untrusted events https://stackoverflow.com/questions/39947875
 					e.initTextEvent('textInput', false, false, null, c);
 					f.dispatchEvent(e); // fire the event on the the textarea
 				} else {
