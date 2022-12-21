@@ -905,7 +905,7 @@ Saenaru.prototype.processHangul2 = function(jamo, notimer) {
 
 Saenaru.prototype.toggleMode = function(t, m) {
 	if (typeof m === 'string') {
-		this.mode = ( m == 'en') ? 'ko' : m.substr(0, 2);
+		this.mode = m.substr(0, 2); // force mode
 	} else {
 		this.mode = this.mode == 'en' ? 'ko' : 'en';
 	}
@@ -1020,6 +1020,19 @@ Saenaru.prototype.keyDown = function(e) {
 		};
 	}
 
+	var c = e.which || e.which == 0 ? e.which : e.keyCode;
+	// c == 229 : composing
+	if (((c==10 || c==13 || c==32) && e.ctrlKey) || ((c == 18 || c == 229) && e.code == 'AltRight')) { // Toggle
+		if (c == 229) {
+			// composing mode
+			this.toggleMode(f, 'en'); // force en mode
+		} else {
+			this.toggleMode(f);
+		}
+		if (e.preventDefault) e.preventDefault();
+		return false;
+	}
+
 	if (e.keyCode == BACKSPACE) {
 		// clear ic
 		if (f.selectionEnd+1 && f.selectionEnd == f.selectionStart)
@@ -1091,7 +1104,6 @@ Saenaru.prototype.keyDown = function(e) {
 		}
 	}
 
-	if (e.keyCode == 27) f.blur(); // ESC like as vim
 	if (this.wordmode && this.compstr.length > 0 && e.ctrlKey) {
 		if (e.keyCode == 'X'.charCodeAt()) {
 			// copy
@@ -1105,13 +1117,16 @@ Saenaru.prototype.keyDown = function(e) {
 		return true;
 	}
 	if (e.keyCode != 16 && e.keyCode < 47) {
-		if (this.ic_size() == 0 && this.compstr.length == 0)
+		if (this.ic_size() == 0 && this.compstr.length == 0) {
+			if (e.keyCode == 27) f.blur(); // ESC like as vim
 			return true;
+		}
 
 		if (this.ic_size() > 0 || this.compstr.length > 0)
 			this.preedit(f, "", this.COMP_END);
 		this.ic_clear_all();
 	}
+	if (e.keyCode == 27) f.blur(); // ESC like as vim
 }
 
 Saenaru.prototype.attach = function(el) {
