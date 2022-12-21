@@ -1138,9 +1138,9 @@ Saenaru.prototype.attach = function(el) {
 }
 
 Saenaru.prototype.setStatus = function(status, el) {
-	this.status = status;
-	status.init(this);
-	status.setMode(this.mode);
+	this.status = status || this.defaultStatus;
+	this.status.init(this);
+	this.status.setMode(this.mode);
 }
 
 Saenaru.prototype.keyboards["2-set"] = {
@@ -1335,7 +1335,7 @@ Saenaru.prototype.composemaps['2-set'] = {
 	]
 };
 
-var mystatus = {
+Saenaru.prototype.defaultStatus = {
 	k3Img: "data:image/gif;base64,R0lGODlhEAAQAIgAAP///wAAACH5BAEAAAEALAAAAAAQABAAAAIijI+py70AwYEOURtzuEkb/0mbyE3k+URmtSql88KZytZNAQA7",
 	koImg: "data:image/gif;base64,R0lGODlhEAAQAIgAAP////8AACH5BAEAAAEALAAAAAAQABAAAAIgjI+py60Ao4EuUOouqJpvzGDRtohkeYKJqk5t28DVrBQAOw==",
 	enImg: "data:image/gif;base64,R0lGODlhEAAQAIgAAP///wAAACH5BAEAAAEALAAAAAAQABAAAAIgjI+py+0AHILSQCpvfBsz7ClhOGnXch5pKW7qGmjV3BQAOw==",
@@ -1404,6 +1404,7 @@ var mystatus = {
 		var ul = document.createElement("ul");
 		ul.style.cssText = 'font-size:12px; position:fixed; margin:0; padding:0;' +
 				'z-index:100; color: black;' +
+				'line-height: 140%;' +
 				'border: 1px solid gray;' +
 				'background: #f6f6f6; list-style: none;' +
 				'-webkit-box-shadow: 2px 2px 4px #999999; box-shadow: 2px 2px 4px #999999;';
@@ -1536,7 +1537,7 @@ var init = function() {
 	//saenaru.kbd = "3-final";
 	//saenaru.kbd = "3soon";
 	//saenaru.kbd = "390";
-	saenaru.setStatus(mystatus);
+	saenaru.setStatus();
 };
 
 if (document.readyState == 'complete') {
