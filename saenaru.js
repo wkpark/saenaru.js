@@ -541,19 +541,11 @@ Saenaru.prototype = {
 			var endText = f.value.substr(f.selectionEnd);
 
 			var e = document.createEvent('TextEvent');
-			if (e.initTextEvent) { // Chrome/safari
-				// Chrome undo/redo support
-				// from http://stackoverflow.com/a/7554295/1696120
-				if (0 && c) {
-					// Chrome no longer support untrusted events https://stackoverflow.com/questions/39947875
-					e.initTextEvent('textInput', false, false, null, c);
-					f.dispatchEvent(e); // fire the event on the the textarea
-				} else {
-					document.execCommand("insertText", false, c);
-					// fixup chrom bug.
-					(scrollTop > f.scrollTop) ? f.scrollTop = scrollTop : true;
-				}
-			} else { // firefox
+			if (document.execCommand) {
+				document.execCommand("insertText", false, c);
+				// fixup chrom bug.
+				(scrollTop > f.scrollTop) ? f.scrollTop = scrollTop : true;
+			} else { // old firefox
 				f.value = f.value.substr(0, selectionStart) + c;
 				var scrollHeight = f.scrollHeight, scrollWidth = f.scrollWidth;
 				f.value+= endText;
