@@ -6,9 +6,14 @@
 
 var Saenaru = function() {};
 
+(function(){
+/* some constants */
+var HANGUL_JAMOS = 0x800;
+var COMP_END = 0;
+var COMP_STR = 1;
+
 Saenaru.prototype = {
     _q: [],
-	HANGUL_JAMOS: 0x800,
 	ic: { lcon:0, mvow:0, fcon:0 },
 	mode: 'ko',
 	timestamp: 0,
@@ -20,7 +25,7 @@ Saenaru.prototype = {
 	laststr: "",
 	kbd: "2-set",
 	composemap: "2-set",
-	optionFlags: 0x800, /* XXX */
+	optionFlags: HANGUL_JAMOS, /* XXX */
 	kbdtbl: null,
 	keyboards: {},
 	composemaps: {},
@@ -919,20 +924,18 @@ Saenaru.prototype = {
 		}
 		return true;
 	},
-	COMP_END: 0,
-	COMP_STR: 1,
 
 	preedit: function(f, c, mode) {
-		if (typeof mode === 'undefined') mode = this.COMP_STR;
+		if (typeof mode === 'undefined') mode = COMP_STR;
 		if (document.selection) { // IE
 			var s = document.selection.createRange(), t = s.text;
 			if (t && document.selection.clear) document.selection.clear();
-			s.text = (mode == this.COMP_STR || c && t.length > 1 ? '' : t) + c;
+			s.text = (mode == COMP_STR || c && t.length > 1 ? '' : t) + c;
 			var sz = c.length;
-			if (!c || mode == this.COMP_END || s.moveStart('character', -sz)) s.select();
+			if (!c || mode == COMP_END || s.moveStart('character', -sz)) s.select();
 		}
 		else if (f.selectionEnd+1) {
-			if (mode == this.COMP_END) f.selectionStart = f.selectionEnd + 0;
+			if (mode == COMP_END) f.selectionStart = f.selectionEnd + 0;
 			var sz = c.length;
 			var scrollTop = f.scrollTop, scrollLeft = f.scrollLeft;
 			var selectionStart = f.selectionStart;
@@ -950,7 +953,7 @@ Saenaru.prototype = {
 				f.scrollTop = (scrollTop > scrollHeight - f.clientHeight) ? scrollTop : scrollHeight - f.clientHeight;
 				f.scrollLeft = (scrollLeft > scrollWidth - f.clientWidth) ? scrollLeft : scrollWidth - f.clientWidth;
 			}
-			f.setSelectionRange(mode == this.COMP_STR ? selectionStart : selectionStart + sz, selectionStart + sz);
+			f.setSelectionRange(mode == COMP_STR ? selectionStart : selectionStart + sz, selectionStart + sz);
 		}
 	},
 
@@ -1391,7 +1394,7 @@ Saenaru.prototype.keyPress = function(e) {
 					// overwrite last compstr
 					this.preedit(f, this.compstr);
 					// advance cursor
-					this.preedit(f, "", this.COMP_END);
+					this.preedit(f, "", COMP_END);
 					// clear compstr
 					this.compstr = "";
 				}
@@ -1407,12 +1410,12 @@ Saenaru.prototype.keyPress = function(e) {
 
 			// for IE
 			if (this.ic_size() > 0 || this.compstr.length > 0) {
-				this.preedit(f, "", this.COMP_END);
+				this.preedit(f, "", COMP_END);
 				this.compstr = "";
 			}
 			if (h != null) c = h;
 
-			this.preedit(f, String.fromCharCode(c), this.COMP_END);
+			this.preedit(f, String.fromCharCode(c), COMP_END);
 			this.ic_clear();
 		}
 		if (e.preventDefault) e.preventDefault();
@@ -1524,7 +1527,7 @@ Saenaru.prototype.keyDown = function(e) {
 		}
 		if (e.keyCode == 'V'.charCodeAt()) {
 			// paste
-			this.preedit(f, "", this.COMP_END);
+			this.preedit(f, "", COMP_END);
 			this.ic_clear_all();
 		}
 		return true;
@@ -1536,7 +1539,7 @@ Saenaru.prototype.keyDown = function(e) {
 		}
 
 		if (this.ic_size() > 0 || this.compstr.length > 0)
-			this.preedit(f, "", this.COMP_END);
+			this.preedit(f, "", COMP_END);
 		this.ic_clear_all();
 	}
 	if (e.keyCode == 27) f.blur(); // ESC like as vim
@@ -1945,7 +1948,6 @@ Saenaru.prototype.defaultStatus = {
 	}
 };
 
-(function() {
 var load = function() {
 	for (var src in arguments) {
 		var s = document.createElement('script');
