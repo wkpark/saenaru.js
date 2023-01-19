@@ -106,8 +106,10 @@ if (typeof Saenaru === 'function') {
 }
 
 var init = function() {
-	if (document.saenaru && typeof document.saenaru.keyboards["3-soon"] === 'undefined') {
-		document.saenaru.keyboards["3-soon"] = keyboard_table_3soon;
+	if (document.saenaru) {
+		if (typeof document.saenaru.keyboards["3-soon"] === 'undefined')
+			document.saenaru.keyboards["3-soon"] = keyboard_table_3soon;
+		document.saenaru.setKeyboard();
 		document.saenaru.setStatus();
 	}
 }

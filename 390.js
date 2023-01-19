@@ -106,8 +106,10 @@ if (typeof Saenaru === 'function') {
 }
 
 var init = function() {
-	if (document.saenaru && typeof document.saenaru.keyboards["3-390"] === 'undefined') {
-		document.saenaru.keyboards["3-390"] = keyboard_table_390;
+	if (document.saenaru) {
+		if (typeof document.saenaru.keyboards["3-390"] === 'undefined')
+			document.saenaru.keyboards["3-390"] = keyboard_table_390;
+		document.saenaru.setKeyboard();
 		document.saenaru.setStatus();
 	}
 }

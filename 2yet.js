@@ -107,10 +107,9 @@ if (typeof Saenaru === 'function') {
 
 var init = function() {
 	if (document.saenaru) {
-		if (typeof document.saenaru.keyboards["2-yet"] === 'undefined') {
+		if (typeof document.saenaru.keyboards["2-yet"] === 'undefined')
 			document.saenaru.keyboards["2-yet"] = keyboard_table_2yet;
-		}
-		//document.saenaru.setKeyboard();
+		document.saenaru.setKeyboard();
 		document.saenaru.setStatus();
 	}
 }

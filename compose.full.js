@@ -365,8 +365,10 @@ if (typeof Saenaru === 'function') {
 }
 
 var init = function() {
-	if (document.saenaru && typeof document.saenaru.composemaps["full"] === 'undefined') {
-		document.saenaru.composemaps["full"] = composemap_full;
+	if (document.saenaru) {
+		if (typeof document.saenaru.composemaps["full"] === 'undefined')
+			document.saenaru.composemaps["full"] = composemap_full;
+		document.saenaru.setKeyboard();
 		document.saenaru.setStatus();
 	}
 }
