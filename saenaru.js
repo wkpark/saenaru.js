@@ -746,6 +746,10 @@ Saenaru.prototype = {
 		if ((jamo >= 0x1100 && jamo <= 0x115f) || (jamo >= 0xa960 && jamo <= 0xa97c)) return 1;
 		else if ((jamo >= 0x1160 && jamo <= 0x11a7) || (jamo >= 0xd7b0 && jamo <= 0xd7c6)) return 2;
 		else if ((jamo >= 0x11a8 && jamo <= 0x11ff) || (jamo >= 0xd7cb && jamo <= 0xd7fb))return 3;
+		else if (jamo == 0x302e || jamo == 0x302f ||
+			(jamo >= 0x0300 && jamo <= 0x036F) ||
+			(jamo >= 0x1dc0 && jamo <= 0x1dff) ||
+			(jamo >= 0xfe20 && jamo <= 0xfe2f)) return 4;
 		else return 0;
 	},
 
@@ -1088,7 +1092,7 @@ Saenaru.prototype = {
 }
 
 Saenaru.prototype.processHangul2 = function(jamo, notimer) {
-	var LCON = 1, MVOW = 2, FCON =3;
+	var LCON = 1, MVOW = 2, FCON = 3, MARK = 4;
 	var ctyping = false;
 	if (typeof notimer === 'undefined' || notimer == false) {
 		var timestamp = new Date().getTime();
@@ -1098,6 +1102,12 @@ Saenaru.prototype.processHangul2 = function(jamo, notimer) {
 
 	var kind = this.kind(jamo);
 	if (kind == 0) return false;
+	if (kind == MARK) {
+		this.ic_commit();
+		// append combining mark
+		this.compstr += String.fromCharCode(jamo);
+		return;
+	}
 
 	var lcon = 0, mvow = 0, fcon = 0, last = 0;
 	var ic = this.ic;
@@ -1400,6 +1410,8 @@ Saenaru.prototype.keyPress = function(e) {
 				this.preedit(f, "", this.COMP_END);
 				this.compstr = "";
 			}
+			if (h != null) c = h;
+
 			this.preedit(f, String.fromCharCode(c), this.COMP_END);
 			this.ic_clear();
 		}
