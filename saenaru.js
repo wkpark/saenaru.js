@@ -8,6 +8,7 @@ var Saenaru = function() {};
 
 Saenaru.prototype = {
     _q: [],
+	HANGUL_JAMOS: 0x800,
 	ic: { lcon:0, mvow:0, fcon:0 },
 	mode: 'ko',
 	timestamp: 0,
@@ -19,12 +20,15 @@ Saenaru.prototype = {
 	laststr: "",
 	kbd: "2-set",
 	composemap: "2-set",
+	optionFlags: 0x800, /* XXX */
 	kbdtbl: null,
 	keyboards: {},
 	composemaps: {},
 
 	setComposeMap: function(name) {
 		this.compose_table = {}; // reset
+		if (typeof this.composemaps[name] == 'undefined')
+			name = '2-set';
 		var map = this.composemaps[name];
 		for (var i = 0; i < map.compose.length; i++) {
 			if (map.compose[i][0] == "#") continue;
@@ -146,7 +150,148 @@ Saenaru.prototype = {
 		}
 		return table[ch - 0x11a8];
 	},
+	jamo_to_cjamo_full: function(key) {
+		var lookup = [
+			[ 0x1100, 0x3131 ],
+			[ 0x1101, 0x3132 ],
+			[ 0x1102, 0x3134 ],
+			[ 0x1103, 0x3137 ],
+			[ 0x1104, 0x3138 ],
+			[ 0x1105, 0x3139 ],
+			[ 0x1106, 0x3141 ],
+			[ 0x1107, 0x3142 ],
+			[ 0x1108, 0x3143 ],
+			[ 0x1109, 0x3145 ],
+			[ 0x110a, 0x3146 ],
+			[ 0x110b, 0x3147 ],
+			[ 0x110c, 0x3148 ],
+			[ 0x110d, 0x3149 ],
+			[ 0x110e, 0x314a ],
+			[ 0x110f, 0x314b ],
+			[ 0x1110, 0x314c ],
+			[ 0x1111, 0x314d ],
+			[ 0x1112, 0x314e ],
+			[ 0x1114, 0x3165 ],
+			[ 0x1115, 0x3166 ],
+			[ 0x111a, 0x3140 ],
+			[ 0x111c, 0x316e ],
+			[ 0x111d, 0x3171 ],
+			[ 0x111e, 0x3172 ],
+			[ 0x1120, 0x3173 ],
+			[ 0x1121, 0x3144 ],
+			[ 0x1122, 0x3174 ],
+			[ 0x1123, 0x3175 ],
+			[ 0x1127, 0x3176 ],
+			[ 0x1129, 0x3177 ],
+			[ 0x112b, 0x3178 ],
+			[ 0x112c, 0x3179 ],
+			[ 0x112d, 0x317a ],
+			[ 0x112e, 0x317b ],
+			[ 0x112f, 0x317c ],
+			[ 0x1132, 0x317d ],
+			[ 0x1136, 0x317e ],
+			[ 0x1140, 0x317f ],
+			[ 0x1146, 0x3183 ],
+			[ 0x1147, 0x3180 ],
+			[ 0x114c, 0x3181 ],
+			[ 0x1157, 0x3184 ],
+			[ 0x1158, 0x3185 ],
+			[ 0x1159, 0x3186 ],
+			[ 0x115B, 0x3167 ],
+			[ 0x115C, 0x3135 ],
+			[ 0x115D, 0x3136 ],
+			[ 0x115f, 0x3164 ], /* L Fill */
+			[ 0x1160, 0x3164 ], /* V Fill */
+			[ 0x1161, 0x314f ],
+			[ 0x1162, 0x3150 ],
+			[ 0x1163, 0x3151 ],
+			[ 0x1164, 0x3152 ],
+			[ 0x1165, 0x3153 ],
+			[ 0x1166, 0x3154 ],
+			[ 0x1167, 0x3155 ],
+			[ 0x1168, 0x3156 ],
+			[ 0x1169, 0x3157 ],
+			[ 0x116a, 0x3158 ],
+			[ 0x116b, 0x3159 ],
+			[ 0x116c, 0x315a ],
+			[ 0x116d, 0x315b ],
+			[ 0x116e, 0x315c ],
+			[ 0x116f, 0x315d ],
+			[ 0x1170, 0x315e ],
+			[ 0x1171, 0x315f ],
+			[ 0x1172, 0x3160 ],
+			[ 0x1173, 0x3161 ],
+			[ 0x1174, 0x3162 ],
+			[ 0x1175, 0x3163 ],
+			[ 0x1184, 0x3187 ],
+			[ 0x1185, 0x3188 ],
+			[ 0x1188, 0x3189 ],
+			[ 0x1191, 0x318a ],
+			[ 0x1192, 0x318b ],
+			[ 0x1194, 0x318c ],
+			[ 0x119e, 0x318d ],
+			[ 0x11a1, 0x318e ],
+			[ 0x11aa, 0x3133 ],
+			[ 0x11ac, 0x3135 ],
+			[ 0x11ad, 0x3136 ],
+			[ 0x11b0, 0x313a ],
+			[ 0x11b1, 0x313b ],
+			[ 0x11b2, 0x313c ],
+			[ 0x11b3, 0x313d ],
+			[ 0x11b4, 0x313e ],
+			[ 0x11b5, 0x313f ],
+			[ 0x11c7, 0x3167 ],
+			[ 0x11c8, 0x3168 ],
+			[ 0x11cc, 0x3169 ],
+			[ 0x11ce, 0x316a ],
+			[ 0x11d3, 0x316b ],
+			[ 0x11d7, 0x316c ],
+			[ 0x11d9, 0x316d ],
+			[ 0x11dd, 0x316f ],
+			[ 0x11df, 0x3170 ],
+			[ 0x11f1, 0x3182 ],
+			[ 0x11f2, 0x3183 ],
+			[ 0xa964, 0x313a ],
+			[ 0xa966, 0x316a ],
+			[ 0xa968, 0x313b ],
+			[ 0xa969, 0x313c ],
+			[ 0xa96c, 0x313d ],
+			[ 0xa971, 0x316f ],
+			[ 0xd7cd, 0x3138 ],
+			[ 0xd7e3, 0x3173 ],
+			[ 0xd7e6, 0x3143 ],
+			[ 0xd7e7, 0x3175 ],
+			[ 0xd7e8, 0x3176 ],
+			[ 0xd7ef, 0x317e ],
+			[ 0xd7f9, 0x3149 ],
+		];
 
+		/* binary search in table */
+		var min = 0, max = lookup.length - 1;
+		var mid;
+
+		while (max >= min) {
+			mid = (min + max) >> 1; /* (min + max) / 2 */
+			if (lookup[mid][0] < key)
+				min = mid + 1;
+			else if (lookup[mid][0] > key)
+				max = mid - 1;
+			else {
+				return lookup[mid][1];
+			}
+		}
+		return key;
+	},
+	jamo_to_cjamo: function(ch) {
+		if (ch >= 0x1100 && ch <= 0x1112)
+			return this.lcon_to_cjamo(ch);
+		if (ch >= 0x1161 && ch <= 0x1175)
+			return this.mvow_to_cjamo(ch);
+		if (ch >= 0x11a8 && ch <= 0x11c2)
+			return this.fcon_to_cjamo(ch);
+
+		return this.jamo_to_cjamo_full(ch);
+	},
 	lcon_to_fcon: function(ch) {
 		var table = [
 			0x11a8,	/* choseong kiyeok	-> jongseong kiyeok	 */
@@ -167,9 +312,123 @@ Saenaru.prototype = {
 			0x11bf,	/* choseong khieukh	-> jongseong khieukh	 */
 			0x11c0,	/* choseong thieuth	-> jongseong thieuth	 */
 			0x11c1,	/* choseong phieuph	-> jongseong phieuph	 */
-			0x11c2	/* choseong hieuh	-> jongseong hieuh	 */
+			0x11c2,	/* choseong hieuh	-> jongseong hieuh	 */
+			0x11c5,	/* choseong nieun-kiyeok          */
+			0x11ff,	/* choseong ssangnieun            */
+			0x11c6,	/* choseong nieun-tikeut          */
+			0x0,	/* choseong nieun-pieup           */
+			0x11ca,	/* choseong tikeut-kiyeok         */
+			0x11cd,	/* choseong rieul-nieun           */
+			0x11d0,	/* choseong ssangrieul            */
+			0x0,	/* choseong rieul-hieuh           */
+			0xd7dd,	/* choseong kapyeounrieul         */
+			0x11dc,	/* choseong mieum-pieup           */
+			0x11e2,	/* choseong kapyeounmieum         */
+			0x0,	/* choseong pieup-kiyeok          */
+			0x0,	/* choseong pieup-nieun           */
+			0xd7e3,	/* choseong pieup-tikeut          */
+			0x0,	/* choseong pieup-sios            */
+			0x0,	/* choseong pieup-sios-kiyeok     */
+			0x0,	/* choseong pieup-sios-tikeut     */
+			0x0,	/* choseong pieup-sios-pieup      */
+			0x0,	/* choseong pieup-ssangsios       */
+			0x0,	/* choseong pieup-sios-cieuc      */
+			0xd7e8,	/* choseong pieup-cieuc           */
+			0xd7e9,	/* choseong pieup-chieuch         */
+			0x0,	/* choseong pieup-thieuth         */
+			0x11ea,	/* choseong pieup-phieuph         */
+			0x0,	/* choseong kapyeounpieup         */
+			0x0,	/* choseong kapyeounssangpieup    */
+			0x11e7,	/* choseong sios-kiyeok           */
+			0x0,	/* choseong sios-nieun            */
+			0x11e8,	/* choseong sios-tikeut           */
+			0x11e9,	/* choseong sios-rieul            */
+			0xd7ea,	/* choseong sios-mieum            */
+			0x11ea,	/* choseong sios-pieup            */
+			0x0,	/* choseong sios-pieup-kiyeok     */
+			0x0,	/* choseong sios-ssangsios        */
+			0x0,	/* choseong sios-ieung            */
+			0xd7ef,	/* choseong sios-cieuc            */
+			0xd7f0,	/* choseong sios-chieuch          */
+			0x0,	/* choseong sios-khieukh          */
+			0xd7f1,	/* choseong sios-thieuth          */
+			0x0,	/* choseong sios-phieuph          */
+			0xd7f2,	/* choseong sios-hieuh		  */
+			0x0,	/* choseong chitueumsios          */
+			0x0,	/* choseong chitueumssangsios     */
+			0x0,	/* choseong ceongchieumsios       */
+			0x0,	/* choseong ceongchieumssangsios  */
+			0x11eb,	/* choseong pansios		  */
+			0x11ec,	/* choseong ieung-kiyeok          */
+			0x0,	/* choseong ieung-tikeut          */
+			0xd7f5,	/* choseong ieung-mieum           */
+			0x0,	/* choseong ieung-pieup           */
+			0x11f1,	/* choseong ieung-sios            */
+			0x11f2,	/* choseong ieung-pansios         */
+			0x11ee,	/* choseong ssangieung            */
+			0x0,	/* choseong ieung-cieuc           */
+			0x0,	/* choseong ieung-chieuch         */
+			0x0,	/* choseong ieung-thieuth         */
+			0x0,	/* choseong ieung-phieuph         */
+			0x11f0,	/* choseong yesieung              */
+			0x0,	/* choseong cieuc-ieung           */
+			0x0,	/* choseong chitueumcieuc         */
+			0x0,	/* choseong chitueumssangcieuc    */
+			0x0,	/* choseong ceongchieumcieuc      */
+			0x0,	/* choseong ceongchieumssangcieuc */
+			0x0,	/* choseong chieuch-khieukh       */
+			0x0,	/* choseong chieuch-hieuh         */
+			0x0,	/* choseong chitueumchieuch       */
+			0x0,	/* choseong ceongchieumchieuch    */
+			0x11f3,	/* choseong phieuph-pieup         */
+			0x11f4,	/* choseong kapyeounphieuph       */
+			0x0,	/* choseong ssanghieuh            */
+			0x11f9,	/* choseong yeorinhieuh           */
+			0x0,	/* choseong kiyeok-tikeut         */
+			0x0,	/* choseong nieun-sios            */
+			0x11ac,	/* choseong nieun-cieuc           */
+			0x11ad,	/* choseong nieun-hieuh           */
+			0x11cb,	/* choseong tikeut-rieul          */
+			0x0	/* choseong filler                */
 		];
-		if (ch < 0x1100 || ch > 0x1112)
+
+		var table_ext = [
+			/* 0xa960 */
+			0x0,	/* choseong tikeut-mieum          */
+			0xd7cf,	/* choseong tikeut-pieup          */
+			0xd7d0,	/* choseong tikeut-sios           */
+			0xd7d2,	/* choseong tikeut-cieuc          */
+			0x11b0,	/* choseong rieul-kiyeok          */
+			0xd7d5,	/* choseong rieul-ssangkiyeok     */
+			0x11ce,	/* choseong rieul-tikeut          */
+			0x0,	/* choseong rieul-ssangtikeut     */
+			0x0,	/* choseong rieul-mieum           */
+			0x11b1,	/* choseong rieul-pieup           */
+			0x11b2,	/* choseong rieul-ssangpieup      */
+			0x11d5,	/* choseong rieul-kapyeounpieup   */
+			0x0,	/* choseong rieul-sios            */
+			0x0,	/* choseong rieul-cieuc           */
+			0x11d8,	/* choseong rieul-khieukh         */
+			0x11da,	/* choseong mieum-kiyeok          */
+			0x0,	/* choseong mieum-tikeut          */
+			0x11dd,	/* choseong mieum-sios            */
+			0x0,	/* choseong pieup-sios-thieuth    */
+			0x0,	/* choseong pieup-khieukh         */
+			0x11e5,	/* choseong pieup-hieuh           */
+			0x0,	/* choseong ssangsios-pieup       */
+			0x0,	/* choseong ieung-rieul           */
+			0x0,	/* choseong ieung-hieuh           */
+			0x0,	/* choseong ssangcieuc-hieuh      */
+			0x0,	/* choseong ssangthieuth          */
+			0x0,	/* choseong phieuph-hieuh         */
+			0x0,	/* choseong hieuh-sios            */
+			/* 0xa97c */
+			0x0	/* choseong ssangyeorinhieuh      */
+		];
+		if (ch >= 0xa960 && ch <= 0xa97c)
+			return table_ext[ch - 0xa960];
+
+		if (ch < 0x1100 || ch > 0x115f)
 			return 0;
 		return table[ch - 0x1100];
 	},
@@ -237,11 +496,133 @@ Saenaru.prototype = {
 			[ 0,	  0x1110 ], /* jong thieuth	  = cho  thieuth		*/
 			[ 0,	  0x1111 ], /* jong phieuph	  = cho  phieuph		*/
 			[ 0,	  0x1112 ], /* jong hieuh	  = cho  hieuh			*/
+			[ 0x11a8, 0x1105 ], /* jong ㄱㄹ          = jong kiyeok + cho ㄹ	*/
+			[ 0x11aa, 0x1100 ], /* jong ㄱㅅㄱ	  = jong kiyeok-sios + cho kiyeok */
+			[ 0x11ab, 0x1100 ], /* jong ㄴㄱ          = jong ㄴ + cho ㄱ		*/
+			[ 0x11ab, 0x1103 ], /* jong ㄴㄷ          = jong ㄴ + cho ㄷ		*/
+			[ 0x11ab, 0x1109 ], /* jong ㄴㅅ          = jong ㄴ + cho ㅅ		*/
+			[ 0x11ab, 0x1140 ], /* jong ㄴㅿ          = jong ㄴ + cho ㅿ		*/
+			[ 0x11ab, 0x1110 ], /* jong ㄴㅌ          = jong ㄴ + cho ㅌ		*/
+			[ 0x11ae, 0x1100 ], /* jong ㄷㄱ          = jong ㄷ + cho ㄱ		*/
+			[ 0x11ae, 0x1105 ], /* jong ㄷㄹ          = jong ㄷ + cho ㄹ		*/
+			[ 0x11b0, 0x1109 ], /* jong ㄹㄱㅅ        = jong ㄹㄱ + cho ㅅ		*/
+			[ 0x11af, 0x1102 ], /* jong ㄹㄴ          = jong ㄹ + cho ㄴ		*/
+			[ 0x11af, 0x1103 ], /* jong ㄹㄷ          = jong ㄹ + cho ㄷ		*/
+			[ 0x11ce, 0x1112 ], /* jong ㄹㄷㅎ        = jong ㄹㄷ + cho ㅎ		*/
+			[ 0x11af, 0x1105 ], /* jong ㄹㄹ          = jong ㄹ + cho ㄹ		*/
+			[ 0x11b1, 0x1100 ], /* jong ㄹㅁㄱ        = jong ㄻ + cho ㄱ		*/
+			[ 0x11b1, 0x1109 ], /* jong ㄹㅁㅅ        = jong ㄻ + cho ㅅ		*/
+			[ 0x11b2, 0x1109 ], /* jong ㄹㅂㅅ        = jong ㄼ + cho ㅅ		*/
+			[ 0x11b2, 0x1112 ], /* jong ㄹㅂㅎ        = jong ㄼ + cho ㅎ		*/
+			[ 0x11b2, 0x110b ], /* jong ㄹㅸ          = jong ㄼ + cho ㅇ		*/
+			[ 0x11b3, 0x1109 ], /* jong ㄹㅅㅅ        = jong ㄽ + cho ㅅ		*/
+			[ 0x11af, 0x1140 ], /* jong ㄹㅿ          = jong ㄹ + cho ㅿ		*/
+			[ 0x11af, 0x110f ], /* jong ㄹㅋ          = jong ㄹ + cho ㅋ		*/
+			[ 0x11af, 0x1159 ], /* jong ㄹㆆ          = jong ㄹ + cho ㆆ		*/
+			[ 0x11b7, 0x1100 ], /* jong ㅁㄱ          = jong ㅁ + cho ㄱ		*/
+			[ 0x11b7, 0x1105 ], /* jong ㅁㄹ          = jong ㅁ + cho ㄹ		*/
+			[ 0x11b7, 0x1107 ], /* jong ㅁㅂ          = jong ㅁ + cho ㅂ		*/
+			[ 0x11b7, 0x1109 ], /* jong ㅁㅅ          = jong ㅁ + cho ㅅ		*/
+			[ 0x11dd, 0x1109 ], /* jong ㅁㅅㅅ        = jong ㅁㅅ + cho ㅅ		*/
+			[ 0x11b7, 0x1140 ], /* jong ㅁㅿ          = jong ㅁ + cho ㅿ		*/
+			[ 0x11b7, 0x110e ], /* jong ㅁㅊ          = jong ㅁ + cho ㅊ		*/
+			[ 0x11b7, 0x1112 ], /* jong ㅁㅎ          = jong ㅁ + cho ㅎ		*/
+			[ 0x11b7, 0x110b ], /* jong ㅱ            = jong ㅁ + cho ㅇ		*/
+			[ 0x11b8, 0x1105 ], /* jong ㅂㄹ          = jong ㅂ + cho ㄹ		*/
+			[ 0x11b8, 0x1111 ], /* jong ㅂㅍ          = jong ㅂ + cho ㅍ		*/
+			[ 0x11b8, 0x1112 ], /* jong ㅂㅎ          = jong ㅂ + cho ㅎ		*/
+			[ 0x11b8, 0x110b ], /* jong ㅸ            = jong ㅂ + cho ㅇ		*/
+			[ 0x11ba, 0x1100 ], /* jong ㅅㄱ          = jong ㅅ + cho ㄱ		*/
+			[ 0x11ba, 0x1103 ], /* jong ㅅㄷ          = jong ㅅ + cho ㄷ		*/
+			[ 0x11ba, 0x1105 ], /* jong ㅅㄹ          = jong ㅅ + cho ㄹ		*/
+			[ 0x11ba, 0x1107 ], /* jong ㅅㅂ          = jong ㅅ + cho ㅂ		*/
+			[ 0,      0x1140 ], /* jong ㅿ            = cho ㅿ			*/
+			[ 0x11bc, 0x1100 ], /* jong ㅇㄱ          = jong ㅇ + cho ㄱ		*/
+			[ 0x11ec, 0x1100 ], /* jong ㅇㄲ          = jong ㅇㄱ + cho ㄱ		*/
+			[ 0x11bc, 0x110b ], /* jong ㅇㅇ          = jong ㅇ + cho ㅇ		*/
+			[ 0x11bc, 0x110f ], /* jong ㅇㅋ          = jong ㅇ + cho ㅋ		*/
+			[ 0,      0x110b ], /* jong ㆁ            = cho ㅇ			*/
+			[ 0x11bc, 0x1109 ], /* jong ㅇㅅ          = jong ㅇ + cho ㅅ		*/
+			[ 0x11bc, 0x1140 ], /* jong ㅇㅿ          = jong ㅇ + cho ㅿ		*/
+			[ 0x11c1, 0x1107 ], /* jong ㅍㅂ          = jong ㅍ + cho ㅂ		*/
+			[ 0x11c1, 0x110b ], /* jong ㆄ            = jong ㅍ + cho ㅇ		*/
+			[ 0x11c2, 0x1102 ], /* jong ㅎㄴ          = jong ㅎ + cho ㄴ		*/
+			[ 0x11c2, 0x1105 ], /* jong ㅎㄹ          = jong ㅎ + cho ㄹ		*/
+			[ 0x11c2, 0x1106 ], /* jong ㅎㅁ          = jong ㅎ + cho ㅁ		*/
+			[ 0x11c2, 0x1107 ], /* jong ㅎㅂ          = jong ㅎ + cho ㅂ		*/
+			[ 0,      0x1159 ], /* jong ㆆ            = cho ㆆ			*/
+			[ 0x11a8, 0x1102 ], /* jong ㄱㄴ          = jong ㄱ + cho ㄴ		*/
+			[ 0x11a8, 0x1107 ], /* jong ㄱㅂ          = jong ㄱ + cho ㅂ		*/
+			[ 0x11a8, 0x110e ], /* jong ㄱㅊ          = jong ㄱ + cho ㅊ		*/
+			[ 0x11a8, 0x110f ], /* jong ㄱㅋ          = jong ㄱ + cho ㅋ		*/
+			[ 0x11a8, 0x1112 ], /* jong ㄱㅎ          = jong ㄱ + cho ㅎ		*/
+			[ 0x11ab, 0x1102 ]  /* jong ㄴㄴ          = jong ㄴ + cho ㄴ		*/
 		];
 
-		var fcon = table[ch - 0x11a8][0];
-		var lcon = table[ch - 0x11a8][1];
-		return [ fcon, lcon ];
+		var table_ext_B = [
+			[ 0x11ab, 0x1105 ], /* jong ㄴㄹ          = jong ㄴ + cho ㄹ		*/
+			[ 0x11ab, 0x110e ], /* jong ㄴㅊ          = jong ㄴ + cho ㅊ		*/
+			[ 0x11ae, 0x1103 ], /* jong ㄸ            = jong ㄷ + cho ㄷ		*/
+			[ 0xd7cd, 0x1107 ], /* jong ㄸㅂ          = jong ㄸ + cho ㅂ		*/
+			[ 0x11ae, 0x11b8 ], /* jong ㄷㅂ          = jong ㄷ + cho ㅂ		*/
+			[ 0x11ae, 0x11ba ], /* jong ㄷㅅ          = jong ㄷ + cho ㅅ		*/
+			[ 0xd7d0, 0x1100 ], /* jong ㄷㅅㄱ        = jong ㄷㅅ + cho ㄱ		*/
+			[ 0x11ae, 0x110c ], /* jong ㄷㅈ          = jong ㄷ + cho ㅈ		*/
+			[ 0x11ae, 0x110e ], /* jong ㄷㅊ          = jong ㄷ + cho ㅊ		*/
+			[ 0x11ae, 0x11c0 ], /* jong ㄷㅌ          = jong ㄷ + cho ㅌ		*/
+
+			[ 0x11ae, 0x1100 ], /* jong ㄺㄱ          = jong ㄺ + cho ㄱ		*/
+			[ 0x11ae, 0x1112 ], /* jong ㄺㅎ          = jong ㄺ + cho ㅎ		*/
+			[ 0x11d0, 0x110f ], /* jong ㄹㄹㅋ        = jong ㄹㄹ + cho ㅋ		*/
+			[ 0x11b1, 0x1112 ], /* jong ㄹㅁㅎ        = jong ㄻ + cho ㅎ		*/
+			[ 0x11b2, 0x1103 ], /* jong ㄹㅂㄷ        = jong ㄼ + cho ㄷ		*/
+			[ 0x11b2, 0x1111 ], /* jong ㄹㅂㅍ        = jong ㄼ + cho ㅍ		*/
+			[ 0x11af, 0x114c ], /* jong ㄹㆁ          = jong ㄹ + cho ㆁ		*/
+			[ 0x11d9, 0x1112 ], /* jong ㅭㅎ          = jong ㅭ + cho ㅎ		*/
+			[ 0x11af, 0x110b ], /* jong ㄹㅇ          = jong ㄹ + cho ㅇ		*/
+			[ 0x11b7, 0x1102 ], /* jong ㅁㄴ          = jong ㅁ + cho ㄴ		*/
+			[ 0xd7de, 0x1102 ], /* jong ㅁㄴㄴ        = jong ㅁㄴ + cho ㄴ		*/
+			[ 0x11b7, 0x1106 ], /* jong ㅁㅁ          = jong ㅁ + cho ㅁ		*/
+			[ 0x11b7, 0x1109 ], /* jong ㅁㅄ          = jong ㅁㅂ + cho ㅅ		*/
+			[ 0x11b7, 0x110c ], /* jong ㅁㅈ          = jong ㅁ + cho ㅈ		*/
+			[ 0x11b8, 0x1103 ], /* jong ㅂㄷ          = jong ㅂ + cho ㄷ		*/
+			[ 0x11b8, 0x1111 ], /* jong ㅂㄿ          = jong ㅂㄹ + cho ㅍ		*/
+			[ 0x11b8, 0x1106 ], /* jong ㅂㅁ          = jong ㅂ + cho ㅁ		*/
+			[ 0x11b8, 0x1107 ], /* jong ㅃ            = jong ㅂ + cho ㅂ		*/
+			[ 0x11b9, 0x1103 ], /* jong ㅄㄷ          = jong ㅄ + cho ㄷ		*/
+			[ 0x11b8, 0x110c ], /* jong ㅂㅈ          = jong ㅂ + cho ㅈ		*/
+			[ 0x11b8, 0x110e ], /* jong ㅂㅊ          = jong ㅂ + cho ㅊ		*/
+			[ 0x11ba, 0x1106 ], /* jong ㅅㅁ          = jong ㅅ + cho ㅁ		*/
+			[ 0x11ba, 0x110b ], /* jong ㅅㅸ          = jong ㅅㅂ + cho ㅇ		*/
+			[ 0x11bb, 0x1100 ], /* jong ㅆㄱ          = jong ㅆ + cho ㄱ		*/
+			[ 0x11bb, 0x1103 ], /* jong ㅆㄷ          = jong ㅆ + cho ㄷ		*/
+			[ 0x11ba, 0x1140 ], /* jong ㅅㅿ          = jong ㅅ + cho ㅿ		*/
+			[ 0x11ba, 0x110c ], /* jong ㅅㅈ          = jong ㅅ + cho ㅈ		*/
+			[ 0x11ba, 0x110e ], /* jong ㅅㅊ          = jong ㅅ + cho ㅊ		*/
+			[ 0x11ba, 0x1110 ], /* jong ㅅㅌ          = jong ㅅ + cho ㅌ		*/
+			[ 0x11ba, 0x1112 ], /* jong ㅅㅎ          = jong ㅅ + cho ㅎ		*/
+			[ 0x11eb, 0x1107 ], /* jong ㅿㅂ          = jong ㅿ + cho ㅂ		*/
+			[ 0x11eb, 0x110b ], /* jong ㅿㅸ          = jong ㅿㅂ + cho ㅇ		*/
+			[ 0x11f0, 0x1106 ], /* jong ㆁㅁ          = jong ㆁ + cho ㅁ		*/
+			[ 0x11f0, 0x1112 ], /* jong ㆁㅎ          = jong ㆁ + cho ㅎ		*/
+			[ 0x11bd, 0x1107 ], /* jong ㅈㅂ          = jong ㅈ + cho ㅂ		*/
+			[ 0xd7f7, 0x1107 ], /* jong ㅈㅃ          = jong ㅈㅂ + cho ㅂ		*/
+			[ 0x11bd, 0x110c ], /* jong ㅈㅈ          = jong ㅈ + cho ㅈ		*/
+			[ 0x11c1, 0x1109 ], /* jong ㅍㅅ          = jong ㅍ + cho ㅅ		*/
+			[ 0x11c1, 0x1110 ]  /* jong ㅍㅌ          = jong ㅍ + cho ㅌ		*/
+		];
+
+		if ( ch >= 0x11a8 && ch <= 0x11ff ) {
+			var fcon = table[ch - 0x11a8][0];
+			var lcon = table[ch - 0x11a8][1];
+			return [ fcon, lcon ];
+		}
+		if ( ch >= 0xd7cb && ch <= 0xd7fb ) {
+			var fcon = table_ext_B[ch - 0xd7cb][0];
+			var lcon = table_ext_B[ch - 0xd7cb][1];
+			return [ fcon, lcon ];
+		}
+		return [ 0, 0 ];
 	},
 
 	mvow_dicompose: function(ch) {
@@ -362,22 +743,22 @@ Saenaru.prototype = {
 	},
 
 	kind: function(jamo) {
-		if (jamo >= 0x1100 && jamo <= 0x115e) return 1;
-		else if (jamo >= 0x1161 && jamo <= 0x11a7) return 2;
-		else if (jamo >= 0x11a8 && jamo <= 0x11ff) return 3;
+		if ((jamo >= 0x1100 && jamo <= 0x115f) || (jamo >= 0xa960 && jamo <= 0xa97c)) return 1;
+		else if ((jamo >= 0x1160 && jamo <= 0x11a7) || (jamo >= 0xd7b0 && jamo <= 0xd7c6)) return 2;
+		else if ((jamo >= 0x11a8 && jamo <= 0x11ff) || (jamo >= 0xd7cb && jamo <= 0xd7fb))return 3;
 		else return 0;
 	},
 
 	is_lcon: function(jamo) {
-		return jamo >= 0x1100 && jamo <= 0x115e;
+		return (jamo >= 0x1100 && jamo <= 0x115f) || (jamo >= 0xa960 && jamo <= 0xa97c);
 	},
 
 	is_fcon: function(jamo) {
-		return jamo >= 0x11a8 && jamo <= 0x11ff;
+		return (jamo >= 0x11a8 && jamo <= 0x11ff) || (jamo >= 0xd7cb && jamo <= 0xd7fb);
 	},
 
 	is_mvow: function(jamo) {
-		return jamo >= 0x1161 && jamo <= 0x11a7;
+		return (jamo >= 0x1160 && jamo <= 0x11a7) || (jamo >= 0xd7b0 && jamo <= 0xd7c6);
 	},
 
 	//
@@ -399,17 +780,30 @@ Saenaru.prototype = {
 			ch = this.jamo_to_syllable(ic.lcon, ic.mvow, ic.fcon);
 		} else {
 			if (ic.lcon)
-				ch = this.lcon_to_cjamo(this.ic.lcon);
+				ch = this.jamo_to_cjamo(this.ic.lcon);
 			else if (ic.mvow)
-				ch = this.mvow_to_cjamo(this.ic.mvow);
-			else
-				ch = this.fcon_to_cjamo(this.ic.fcon);
+				ch = this.jamo_to_cjamo(this.ic.mvow);
+			else if (ic.fcon)
+				ch = this.jamo_to_cjamo(this.ic.fcon);
 		}
 		//this.log("==========" + ch + "==========\nl=" + this.ic.lcon + "\nm=" + this.ic.mvow + "\nf=" + this.ic.fcon + "\n");
 		if (ch > 0)
 			ch = String.fromCharCode(ch);
-		else
+		else {
 			ch = "";
+			if (ic.lcon)
+				ch = String.fromCharCode(ic.lcon);
+			else if (ic.mvow)
+				ch = String.fromCharCode(0x115f); // lcon fill
+
+			if (ic.mvow)
+				ch += String.fromCharCode(ic.mvow);
+			else if (ic.lcon)
+				ch += String.fromCharCode(0x1160); // mvow fill
+
+			if (ic.fcon)
+				ch += String.fromCharCode(ic.fcon);
+		}
 
 		if (this.compstr)
 			return this.compstr + ch;
@@ -570,6 +964,8 @@ Saenaru.prototype = {
 
 	setKeyboard: function(name) {
 		var alias = {
+			"2yet": "2-yet",
+			"3yet": "3-yet",
 			"390": "3-390",
 			"3soon": "3-soon",
 			"3sun": "3-soon",
@@ -1551,6 +1947,8 @@ var init = function() {
 	if (typeof document.saenaru === 'object') return;
 	// load keyboard files
 	//load("3final.js", "390.js", "3soon.js");
+	/* enable 2set middle age hangul keyboard */
+	//load("compose.full.js", "2yet.js");
 
 	var saenaru = new Saenaru();
 	document.saenaru = saenaru;
@@ -1562,6 +1960,7 @@ var init = function() {
 	//saenaru.kbd = "3-final";
 	//saenaru.kbd = "3-soon";
 	//saenaru.kbd = "3-390";
+	//saenaru.kbd = "2-yet";
 	//saenaru.setKeyboard();
 	saenaru.setStatus();
 };
