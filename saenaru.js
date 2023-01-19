@@ -1516,8 +1516,9 @@ Saenaru.prototype.defaultStatus = {
 		if (typeof this.ime.keyboards[this.ime.kbd] === 'undefined') {
 			if (mode == 'ko' && this.ime.kbd && this.ime.kbd[0] == '3')
 				mode = 'k3';
-		}
-		if (mode == 'ko' && this.ime.keyboards[this.ime.kbd].type == 3) mode = 'k3';
+		} else if (mode == 'ko' && this.ime.keyboards[this.ime.kbd].type == 3)
+			mode = 'k3';
+
 		if (mode == 'ko')
 			this.status.style.background = 'royalblue url("' + this.koImg + '") no-repeat';
 		else if (mode == 'k3')
