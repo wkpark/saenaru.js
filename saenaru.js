@@ -1945,13 +1945,13 @@ var load = function() {
 
 var init = function() {
 	if (typeof document.saenaru === 'object') return;
+	var saenaru = new Saenaru();
+	document.saenaru = saenaru;
+
 	// load keyboard files
 	//load("3final.js", "390.js", "3soon.js");
 	/* enable 2set middle age hangul keyboard */
 	//load("compose.full.js", "2yet.js");
-
-	var saenaru = new Saenaru();
-	document.saenaru = saenaru;
 
 	saenaru.setup('ko');
 
