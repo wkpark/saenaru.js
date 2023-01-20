@@ -1638,7 +1638,8 @@ Saenaru.prototype.attach = function(el) {
 		el.addEventListener('keypress', function(e) { return self.keyPress(e); }, true);
 		el.addEventListener('mousedown', function(e) {
 			var e = e || window.event, f = e.target || e.srcElement, n = f.nodeName || f.tagName;
-			if ((f.type != 'text' || f.nodeName != 'INPUT') && f.nodeName != 'TEXTAREA') return true;
+			if ((f.type != 'text' || f.nodeName != 'INPUT') && f.nodeName != 'TEXTAREA')
+				if (!f.isContentEditable) return true;
 			if (self.status && self.status.showMode) self.status.showMode(f);
 		}, true);
 	} else {
@@ -1646,15 +1647,19 @@ Saenaru.prototype.attach = function(el) {
 		el.onkeypress = function(e) { return self.keyPress(e); };
 		el.onmousedown = function(e) {
 			var e = e || window.event, f = e.target || e.srcElement, n = f.nodeName || f.tagName;
-			if ((f.type != 'text' || f.nodeName != 'INPUT') && f.nodeName != 'TEXTAREA') return true;
+			if ((f.type != 'text' || f.nodeName != 'INPUT') && f.nodeName != 'TEXTAREA')
+				if (!f.isContentEditable) return true;
 			if (self.status && self.status.showMode) self.status.showMode(f);
 		};
 	}
 }
 
 Saenaru.prototype.setStatus = function(status, el) {
-	this.status = status || this.defaultStatus;
-	this.status.init(this);
+	this.status = status || this.status;
+	if (typeof this.status === 'undefined') {
+		this.status = this.defaultStatus;
+		this.status.init(this);
+	}
 	this.status.setMode(this.mode);
 }
 
@@ -2002,6 +2007,12 @@ Saenaru.prototype.defaultStatus = {
 	},
 
 	showMode: function(el) {
+		// get the block level parent
+		if ((el.type != 'text' || el.nodeName != 'INPUT') && el.nodeName != 'TEXTAREA') {
+			var blocks = /^(div|body|pre|p|frameset|html)$/i;
+			while (!blocks.test(el.nodeName) && el.parentNode)
+				el = el.parentNode;
+		}
 		var offset = this._get_offset(el);
 		this.status.style.left = offset.left + 'px';
 		this.status.style.top = offset.top + (el.offsetHeight) + 'px';
@@ -2017,7 +2028,7 @@ Saenaru.prototype.defaultStatus = {
 		if (mode == 'ko')
 			this.status.style.background = 'royalblue url("' + this.koImg + '") no-repeat';
 		else if (mode == 'k3')
-			this.status.style.background = 'royalblue url("' + this.k3Img + '") no-repeat';
+			this.status.style.background = '#4169e1c4 url("' + this.k3Img + '") no-repeat';
 		else
 			this.status.style.background = 'royalblue url("' + this.enImg + '") no-repeat';
 		this.status.firstChild.innerHTML = mode.charAt(0).toUpperCase() + mode.slice(1);
@@ -2025,7 +2036,8 @@ Saenaru.prototype.defaultStatus = {
 		if (typeof f === 'undefined') {
 			try {
 				f = document.activeElement;
-				if ((f.type != 'text' || f.nodeName != 'INPUT') && f.nodeName != 'TEXTAREA') return;
+				if ((f.type != 'text' || f.nodeName != 'INPUT') && f.nodeName != 'TEXTAREA')
+					if (!f.isContentEditable) return;
 			} catch (e) { return; }
 		}
 		this.showMode(f);
