@@ -956,6 +956,37 @@ Saenaru.prototype = {
 				f.scrollLeft = (scrollLeft > scrollWidth - f.clientWidth) ? scrollLeft : scrollWidth - f.clientWidth;
 			}
 			f.setSelectionRange(mode == COMP_STR ? selectionStart : selectionStart + sz, selectionStart + sz);
+		} else if (document.getSelection && document.execCommand) {
+			var sel = document.getSelection();
+			var node = sel.focusNode;
+			var sz = c.length;
+
+			if (mode == COMP_END) {
+				// deselect
+				var r = document.createRange();
+				r.collapse(false);
+				r.setStart(node, sel.focusOffset);
+				r.setEnd(node, sel.focusOffset);
+				sel.removeAllRanges();
+				sel.addRange(r);
+			}
+			if (sz >= 0) {
+				var scrollTop = f.scrollTop, scrollLeft = f.scrollLeft;
+
+				document.execCommand("insertText", false, c);
+
+				if (sz > 0) {
+					var r = document.createRange();
+					var start = sel.focusOffset;
+					r.collapse(false);
+					r.setStart(node, mode == COMP_STR ? start - sz : start);
+					r.setEnd(node, start);
+					sel.removeAllRanges();
+					sel.addRange(r);
+				}
+
+				(scrollTop > f.scrollTop) ? f.scrollTop = scrollTop : true;
+			}
 		}
 	},
 
@@ -1044,6 +1075,33 @@ Saenaru.prototype = {
 					f.setSelectionRange(i, f.selectionEnd);
 				} else {
 					str = f.value.substring(f.selectionStart, f.selectionEnd);
+				}
+			} else if (f.isContentEditable) {
+				var sel = document.getSelection();
+				if (sel.baseNode == sel.focusNode && sel.baseOffset == sel.focusOffset) {
+					var i = sel.focusOffset;
+
+					// get ascii only chars
+					str = "";
+					while (i > 0) {
+						var c = sel.baseNode.textContent.substr(i - 1, 1);
+						if (c.match(/[a-zA-Z0-9 \.,;]/)) {
+							i--;
+							str = c + str;
+						} else {
+							break;
+						}
+					}
+
+					var r = document.createRange();
+					var start = i;
+					r.collapse(false);
+					r.setStart(sel.baseNode, start);
+					r.setEnd(sel.baseNode, sel.focusOffset);
+					sel.removeAllRanges();
+					sel.addRange(r);
+				} else if (sel.baseNode == sel.focusNode) {
+					str = sel.baseNode.textContent.substr(sel.baseOffset, sel.focusOffset - sel.baseOffset);
 				}
 			}
 			if (str.length == 0) return null;
@@ -1366,7 +1424,8 @@ Saenaru.prototype.composeList = function() {
 
 Saenaru.prototype.keyPress = function(e) {
 	var e = e || window.event, f = e.target || e.srcElement, n = f.nodeName || f.tagName;
-	if ((f.type != 'text' || n != 'INPUT') && n != 'TEXTAREA') return true;
+	if ((f.type != 'text' || n != 'INPUT') && n != 'TEXTAREA')
+		if (!f.isContentEditable) return true;
 
 	var c = e.which || e.which == 0 ? e.which : e.keyCode;
 
@@ -1382,6 +1441,11 @@ Saenaru.prototype.keyPress = function(e) {
 			this.ic_clear();
 		else if (document.selection && document.selection.createRange().text.length == 0)
 			this.ic_clear();
+		else if (f.isContentEditable) {
+			var sel = document.getSelection();
+			if (sel.baseNode == sel.focusNode && sel.baseOffset == sel.focusOffset)
+				this.ic_clear();
+		}
 
 		// get hangul keyboard
 		var h = c;
@@ -1428,7 +1492,8 @@ Saenaru.prototype.keyPress = function(e) {
 Saenaru.prototype.keyDown = function(e) {
 	var BACKSPACE = 8;
 	var e = e || window.event, f = e.target || e.srcElement, n = f.nodeName || f.tagName;
-	if ((f.type != 'text' || n != 'INPUT') && n != 'TEXTAREA') return true;
+	if ((f.type != 'text' || n != 'INPUT') && n != 'TEXTAREA')
+		if (!f.isContentEditable) return true;
 
 	if (f.onmousedown == null) {
 		// FIXME
@@ -1457,6 +1522,11 @@ Saenaru.prototype.keyDown = function(e) {
 			this.ic_clear();
 		else if (document.selection && document.selection.createRange().text.length == 0)
 			this.ic_clear();
+		else if (f.isContentEditable) {
+			var sel = document.getSelection();
+			if (sel.baseNode == sel.focusNode && sel.baseOffset == sel.focusOffset)
+				this.ic_clear();
+		}
 
 		if (this.ic_size() > 0) {
 			// edit compstr
@@ -1492,6 +1562,18 @@ Saenaru.prototype.keyDown = function(e) {
 						r.moveStart('character', -1);
 					ch = r.text.substr(r.text.length - 1, 1);
 					r.select();
+				} else if (f.isContentEditable) {
+					var sel = document.getSelection();
+
+					ch = sel.baseNode.textContent.substr(sel.focusOffset - 1, 1);
+
+					var r = document.createRange();
+					var start = sel.focusOffset;
+					r.collapse(false);
+					r.setStart(sel.baseNode, start - 1);
+					r.setEnd(sel.baseNode, start);
+					sel.removeAllRanges();
+					sel.addRange(r);
 				}
 			}
 
