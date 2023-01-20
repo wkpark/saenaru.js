@@ -569,15 +569,15 @@ Saenaru.prototype = {
 			[ 0x11ab, 0x110e ], /* jong ㄴㅊ          = jong ㄴ + cho ㅊ		*/
 			[ 0x11ae, 0x1103 ], /* jong ㄸ            = jong ㄷ + cho ㄷ		*/
 			[ 0xd7cd, 0x1107 ], /* jong ㄸㅂ          = jong ㄸ + cho ㅂ		*/
-			[ 0x11ae, 0x11b8 ], /* jong ㄷㅂ          = jong ㄷ + cho ㅂ		*/
-			[ 0x11ae, 0x11ba ], /* jong ㄷㅅ          = jong ㄷ + cho ㅅ		*/
+			[ 0x11ae, 0x1107 ], /* jong ㄷㅂ          = jong ㄷ + cho ㅂ		*/
+			[ 0x11ae, 0x1109 ], /* jong ㄷㅅ          = jong ㄷ + cho ㅅ		*/
 			[ 0xd7d0, 0x1100 ], /* jong ㄷㅅㄱ        = jong ㄷㅅ + cho ㄱ		*/
 			[ 0x11ae, 0x110c ], /* jong ㄷㅈ          = jong ㄷ + cho ㅈ		*/
 			[ 0x11ae, 0x110e ], /* jong ㄷㅊ          = jong ㄷ + cho ㅊ		*/
-			[ 0x11ae, 0x11c0 ], /* jong ㄷㅌ          = jong ㄷ + cho ㅌ		*/
+			[ 0x11ae, 0x1110 ], /* jong ㄷㅌ          = jong ㄷ + cho ㅌ		*/
 
-			[ 0x11ae, 0x1100 ], /* jong ㄺㄱ          = jong ㄺ + cho ㄱ		*/
-			[ 0x11ae, 0x1112 ], /* jong ㄺㅎ          = jong ㄺ + cho ㅎ		*/
+			[ 0x11b0, 0x1100 ], /* jong ㄺㄱ          = jong ㄺ + cho ㄱ		*/
+			[ 0x11b0, 0x1112 ], /* jong ㄺㅎ          = jong ㄺ + cho ㅎ		*/
 			[ 0x11d0, 0x110f ], /* jong ㄹㄹㅋ        = jong ㄹㄹ + cho ㅋ		*/
 			[ 0x11b1, 0x1112 ], /* jong ㄹㅁㅎ        = jong ㄻ + cho ㅎ		*/
 			[ 0x11b2, 0x1103 ], /* jong ㄹㅂㄷ        = jong ㄼ + cho ㄷ		*/
@@ -588,17 +588,17 @@ Saenaru.prototype = {
 			[ 0x11b7, 0x1102 ], /* jong ㅁㄴ          = jong ㅁ + cho ㄴ		*/
 			[ 0xd7de, 0x1102 ], /* jong ㅁㄴㄴ        = jong ㅁㄴ + cho ㄴ		*/
 			[ 0x11b7, 0x1106 ], /* jong ㅁㅁ          = jong ㅁ + cho ㅁ		*/
-			[ 0x11b7, 0x1109 ], /* jong ㅁㅄ          = jong ㅁㅂ + cho ㅅ		*/
+			[ 0x11dc, 0x1109 ], /* jong ㅁㅂㅅ        = jong ㅁㅂ + cho ㅅ		*/
 			[ 0x11b7, 0x110c ], /* jong ㅁㅈ          = jong ㅁ + cho ㅈ		*/
 			[ 0x11b8, 0x1103 ], /* jong ㅂㄷ          = jong ㅂ + cho ㄷ		*/
-			[ 0x11b8, 0x1111 ], /* jong ㅂㄿ          = jong ㅂㄹ + cho ㅍ		*/
+			[ 0x11e3, 0x1111 ], /* jong ㅂㄹㅍ        = jong ㅂㄹ + cho ㅍ		*/
 			[ 0x11b8, 0x1106 ], /* jong ㅂㅁ          = jong ㅂ + cho ㅁ		*/
 			[ 0x11b8, 0x1107 ], /* jong ㅃ            = jong ㅂ + cho ㅂ		*/
 			[ 0x11b9, 0x1103 ], /* jong ㅄㄷ          = jong ㅄ + cho ㄷ		*/
 			[ 0x11b8, 0x110c ], /* jong ㅂㅈ          = jong ㅂ + cho ㅈ		*/
 			[ 0x11b8, 0x110e ], /* jong ㅂㅊ          = jong ㅂ + cho ㅊ		*/
 			[ 0x11ba, 0x1106 ], /* jong ㅅㅁ          = jong ㅅ + cho ㅁ		*/
-			[ 0x11ba, 0x110b ], /* jong ㅅㅸ          = jong ㅅㅂ + cho ㅇ		*/
+			[ 0x11ea, 0x110b ], /* jong ㅅㅸ          = jong ㅅㅂ + cho ㅇ		*/
 			[ 0x11bb, 0x1100 ], /* jong ㅆㄱ          = jong ㅆ + cho ㄱ		*/
 			[ 0x11bb, 0x1103 ], /* jong ㅆㄷ          = jong ㅆ + cho ㄷ		*/
 			[ 0x11ba, 0x1140 ], /* jong ㅅㅿ          = jong ㅅ + cho ㅿ		*/
@@ -607,7 +607,7 @@ Saenaru.prototype = {
 			[ 0x11ba, 0x1110 ], /* jong ㅅㅌ          = jong ㅅ + cho ㅌ		*/
 			[ 0x11ba, 0x1112 ], /* jong ㅅㅎ          = jong ㅅ + cho ㅎ		*/
 			[ 0x11eb, 0x1107 ], /* jong ㅿㅂ          = jong ㅿ + cho ㅂ		*/
-			[ 0x11eb, 0x110b ], /* jong ㅿㅸ          = jong ㅿㅂ + cho ㅇ		*/
+			[ 0xd7f3, 0x110b ], /* jong ㅿㅸ          = jong ㅿㅂ + cho ㅇ		*/
 			[ 0x11f0, 0x1106 ], /* jong ㆁㅁ          = jong ㆁ + cho ㅁ		*/
 			[ 0x11f0, 0x1112 ], /* jong ㆁㅎ          = jong ㆁ + cho ㅎ		*/
 			[ 0x11bd, 0x1107 ], /* jong ㅈㅂ          = jong ㅈ + cho ㅂ		*/
@@ -875,8 +875,10 @@ Saenaru.prototype = {
 		return l.reverse();
 	},
 
-	ic_peek: function() {
-		return this._q[this._q.length - 1];
+	ic_peek: function(pos) {
+		if (typeof pos === 'undefined' || pos >= this._q.length || pos < 0)
+			pos = 0;
+		return this._q[this._q.length - 1 - pos];
 	},
 
 	ic_size: function() {
@@ -1266,10 +1268,10 @@ Saenaru.prototype.processHangul2 = function(jamo, notimer) {
 
 			// dicomposed
 			if (fcon && lcon) {
-				if (last != lcon) {
-					var tmp = lcon;
+				if (last != 0 && last != lcon) {
+					// in this case, get the last queued fcon manually.
 					lcon = last;
-					ic.fcon = this.lcon_to_fcon(tmp);
+					ic.fcon = this.ic_peek(1);
 				} else {
 					ic.fcon = fcon;
 				}
